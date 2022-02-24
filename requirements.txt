@@ -1,0 +1,5 @@
+beautifulsoup4==4.10.0
+lxml==4.8.0
+PySimpleGUI==4.56.0
+pytz==2021.3
+soupsieve==2.3.1
