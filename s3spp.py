@@ -36,10 +36,10 @@ def about() -> sg.Window:
             ]),
             sg.Column([
                 [sg.Button("SpiredMoth", key=(
-                    "LINK", "ABOUT", "AUTHOR"), **STYLES["btn_url"])],
+                    "-LINK-", "-ABOUT-", "-AUTHOR-"), **STYLES["btn_url"])],
                 [sg.Button("GitHub", key=(
-                    "LINK", "ABOUT", "SOURCE"), **STYLES["btn_url"])],
-                [sg.Button("GPL-3.0", key=("LINK", "ABOUT", "LICENSE"),
+                    "-LINK-", "-ABOUT-", "-SOURCE-"), **STYLES["btn_url"])],
+                [sg.Button("GPL-3.0", key=("-LINK-", "-ABOUT-", "-LICENSE-"),
                            **STYLES["btn_url"])],
             ]),
         ],
@@ -51,30 +51,29 @@ def about() -> sg.Window:
 
 
 # TODO: incorporate deal times somehow
-def daily_deals(deals: dict, items: dict, start: int = 1, count: int = 977) -> list:
+def daily_deals(deals: dict, items: dict, start_num: int = 1, count: int = 977) -> list:
     values = []
-    col_widths = [7, 50, 10 ,9, 7]
+    col_widths = [7, 50, 10, 9, 7]
 
-    # generate count number of DD indexes starting from start, cycling
-    # if necessary
-    start -= 1  # argument is 1-indexed, implementation is 0-indexed
-    keys = [f"DD #{(i + start) % 977 + 1:0>3}" for i in range(count)]
+    # generate list of DDs to display as well as a start time for first
+    start_num -= 1  # convert 1-indexed argument to 0-indexed
+    keys = [f"DD #{(start_num + i) % 977 + 1:0>3}" for i in range(count)]
 
     for k in keys:
-        v = deals["items"][k]
-        key = v["id"]
+        deal = deals["items"][k]
+        key = deal["id"]
         name = items[key]["name"]
         price = items[key]["price"]
         if price == "-":
             price = int(items[key]["worth"])
         else:
             price = int(price)
-        sale = v["price"]
+        sale = deal["price"]
         savings = math.floor(100 - sale / price * 100)
         row = [k, name, price, sale, f"{savings}%"]
         values.append(row)
-        row = [str(v) for v in row]
         # dynamic column widths
+        # row = [str(v) for v in row]
         # for i, v in enumerate(row):
         #     col_widths[i] = max(col_widths[i], len(v))
     values.sort()
@@ -118,10 +117,15 @@ def settings(tz: str = "UTC") -> list:
         [
             sg.Column([
                 [sg.Text("Timezone")],
+                [sg.Text("Image folder")],
+                [sg.Text("Downloads folder")],
             ]),
             sg.Column([
                 [sg.Combo(pytz.all_timezones, default_value=tz, key=(
-                    "SETTINGS", "TIMEZONE"), enable_events=True)],
+                    "-SETTINGS-", "-TIMEZONE-"), enable_events=True)],
+                [sg.Input(key=("-SETTINGS-", "-IMAGE_DIR-")), sg.FolderBrowse()],
+                [sg.Input(key=("-SETTINGS-", "-DOWNLOAD_DIR-")),
+                 sg.FolderBrowse()],
             ]),
         ]
     ]
@@ -136,29 +140,31 @@ def item_details() -> list:
     layout = [
         [
             sg.Push(),
-            sg.Image("", size=(200, 200), key=("CATALOG", "DETAILS", "IMAGE")),
+            sg.Image("", size=(200, 200), key=(
+                "-CATALOG-", "-DETAILS-", "-IMAGE-")),
             sg.Push(),
         ],
         [
-            sg.Text("Long Term InVESTment", key=("CATALOG", "DETAILS",
-                    "VALUE", "NAME"), font=("_", 10, "bold")),
+            sg.Text("Item Name", key=("-CATALOG-", "-DETAILS-",
+                    "-VALUE-", "-NAME-"), font=("_", 10, "bold")),
         ],
         [sg.Text("(item description)", key=(
-            "CATALOG", "DETAILS", "DESCRIPTION"))],
+            "-CATALOG-", "-DETAILS-", "-DESCRIPTION-"))],
         [sg.HorizontalSeparator()],
         [sg.Text("TODO: item details")],
         [
             sg.Column([
                 [sg.Text("Price (SP):")],
-                [sg.Text("Set(s):", key=("CATALOG", "DETAILS", "LABEL", "PARENTS"))],
+                [sg.Text("Set(s):", key=(
+                    "-CATALOG-", "-DETAILS-", "-LABEL-", "-PARENTS-"))],
             ]),
             sg.Column([
-                [sg.Text("75", key=("CATALOG", "DETAILS", "VALUE", "PRICE"))],
+                [sg.Text("Price", key=("-CATALOG-", "-DETAILS-", "-VALUE-", "-PRICE-"))],
                 [sg.Text("Everyday Casual Chic", key=(
-                    "CATALOG", "DETAILS", "VALUE", "PARENTS"))],
+                    "-CATALOG-", "-DETAILS-", "-VALUE-", "-PARENTS-"))],
             ]),
         ],
-        [sg.Checkbox("Wishlist", key=("CATALOG", "DETAILS", "WISHLIST"))],
+        [sg.Checkbox("Wishlist", key=("-CATALOG-", "-DETAILS-", "-WISHLIST-"))],
     ]
     return layout
 
@@ -169,20 +175,20 @@ def item_details() -> list:
 
 def get_store_link(target: str, is_set: bool = False) -> str:
     fixed_links = {
-        "DAILY_DEAL": "https://store.thesims3.com/dailyDeal.html",
-        "MMAO": "https://store.thesims3.com/makemeanoffer.html",
-        "SALE": "https://store.thesims3.com/sale.html",
-        "RIVERVIEW": "https://store.thesims3.com/riverview.html",
-        "BARNACLE_BAY": "https://store.thesims3.com/barnacleBay.html",
-        "HIDDEN_SPRINGS": "https://store.thesims3.com/hiddenSprings.html",
-        "LUNAR_LAKES": "https://store.thesims3.com/lunarlakes.html",
-        "LUCKY_PALMS": "https://store.thesims3.com/luckypalms.html",
-        "SUNLIT_TIDES": "https://store.thesims3.com/sunlittides.html",
-        "MONTE_VISTA": "https://store.thesims3.com/montevista.html",
-        "AURORA_SKIES": "https://store.thesims3.com/auroraskies.html",
-        "DRAGON_VALLEY": "https://store.thesims3.com/dragonvalley.html",
-        "MIDNIGHT_HOLLOW": "https://store.thesims3.com/midnighthollow.html",
-        "ROARING_HEIGHTS": "https://store.thesims3.com/roaringheights.html",
+        "-DAILY_DEAL-": "https://store.thesims3.com/dailyDeal.html",
+        "-MMAO-": "https://store.thesims3.com/makemeanoffer.html",
+        "-SALE-": "https://store.thesims3.com/sale.html",
+        "-RIVERVIEW-": "https://store.thesims3.com/riverview.html",
+        "-BARNACLE_BAY-": "https://store.thesims3.com/barnacleBay.html",
+        "-HIDDEN_SPRINGS-": "https://store.thesims3.com/hiddenSprings.html",
+        "-LUNAR_LAKES-": "https://store.thesims3.com/lunarlakes.html",
+        "-LUCKY_PALMS-": "https://store.thesims3.com/luckypalms.html",
+        "-SUNLIT_TIDES-": "https://store.thesims3.com/sunlittides.html",
+        "-MONTE_VISTA-": "https://store.thesims3.com/montevista.html",
+        "-AURORA_SKIES-": "https://store.thesims3.com/auroraskies.html",
+        "-DRAGON_VALLEY-": "https://store.thesims3.com/dragonvalley.html",
+        "-MIDNIGHT_HOLLOW-": "https://store.thesims3.com/midnighthollow.html",
+        "-ROARING_HEIGHTS-": "https://store.thesims3.com/roaringheights.html",
     }
     if target in fixed_links:
         return fixed_links[target]
@@ -197,15 +203,15 @@ def get_store_link(target: str, is_set: bool = False) -> str:
 
 def handler_link(window: sg.Window, event: tuple, values: dict):
     links = {
-        "ABOUT": {
-            "AUTHOR": "https://forums.thesims.com/en_US/profile/SpiredMoth",
-            "SOURCE": "https://github.com/SpiredMoth/s3spp",
-            "LICENSE": "https://www.gnu.org/licenses/gpl.html",
-            "PYTHON": "https://www.python.org/",
-            "PYSIMPLEGUI": "https://pysimplegui.readthedocs.io/en/latest/",
+        "-ABOUT-": {
+            "-AUTHOR-": "https://forums.thesims.com/en_US/profile/SpiredMoth",
+            "-SOURCE-": "https://github.com/SpiredMoth/s3spp",
+            "-LICENSE-": "https://www.gnu.org/licenses/gpl.html",
+            "-PYTHON-": "https://www.python.org/",
+            "-PYSIMPLEGUI-": "https://pysimplegui.readthedocs.io/en/latest/",
         },
     }
-    if event[1] == "STORE":
+    if event[1] == "-STORE-":
         target = get_store_link(event[3], event[2])
     else:
         target = links[event[1]][event[2]]
@@ -215,10 +221,10 @@ def handler_link(window: sg.Window, event: tuple, values: dict):
 def handler_navigation(window: sg.Window, event: tuple, values: dict):
     # tab layout generator mapping
     new_tabs = {
-        "DAILY_DEAL": blank,
-        "SALES": blank,
-        "MMAO": blank,
-        "WISHLIST": blank,
+        "-DAILY_DEAL-": blank,
+        "-SALES-": blank,
+        "-MMAO-": blank,
+        "-WISHLIST-": blank,
     }
 
     if event in new_tabs:
@@ -252,11 +258,13 @@ def main():
         [sg.Text(f"Items in Store: {len(store['items'])}")],
     ]
     layout_dd = [
-        [sg.Button("Daily Deal (Store page)", key=("LINK", "STORE", "_", "DAILY_DEAL"), **STYLES["btn_url"])],
+        [sg.Button("Daily Deal (Store page)", key=(
+            "-LINK-", "-STORE-", "_", "-DAILY_DEAL-"), **STYLES["btn_url"])],
         [
             sg.Column([
                 [sg.Text("Current Daily Deal")],
-                [sg.Image("", key=("-DD-", "-CURRENT-", "-IMAGE-"), size=(200, 200))],
+                [sg.Image("", key=("-DD-", "-CURRENT-",
+                          "-IMAGE-"), size=(200, 200))],
                 [sg.Text("TODO: upcoming (and recent?) deals list")],
             ], vertical_alignment="top"),
             sg.Column([
@@ -271,15 +279,15 @@ def main():
             sg.Frame("Search", [[
                 sg.Column([
                     [sg.Text("ID")],
-                    [sg.Input(key=("CATALOG", "SEARCH", "ID"), size=(5, 1))],
+                    [sg.Input(key=("-CATALOG-", "-SEARCH-", "-ID-"), size=(5, 1))],
                 ]),
                 sg.Column([
                     [sg.Text("Name")],
-                    [sg.Input(key=("CATALOG", "SEARCH", "NAME"))],
+                    [sg.Input(key=("-CATALOG-", "-SEARCH-", "-NAME-"))],
                 ]),
             ]])
         ],
-        [sg.Listbox([], key=("CATALOG", "SEARCH", "RESULTS"),
+        [sg.Listbox([], key=("-CATALOG-", "-SEARCH-", "-RESULTS-"),
                     expand_x=True, expand_y=True)],
     ]
     layout_catalog = [
@@ -294,27 +302,34 @@ def main():
         [
             sg.Column([
                 [sg.Text("Set name:", size=(12, 1)),
-                 sg.Input(key=("CYS", "SET_NAME"))],
+                 sg.Input(key=("-CYS-", "-SET_NAME-"))],
                 [sg.Text("Owned items:", size=(12, 1)), sg.Input(
-                    key=("CYS", "OWNED"), size=(5, 1))],
+                    key=("-CYS-", "-OWNED-"), size=(5, 1))],
                 [sg.Text("Set price:", size=(12, 1)), sg.Input(
-                    key=("CYS", "SET_PRICE"), size=(5, 1))],
+                    key=("-CYS-", "-SET_PRICE-"), size=(5, 1))],
                 [sg.Frame("CYS", [
                     [sg.Text("TODO: Set CYS prices")],
                     [sg.Text("Set name"), sg.Text("price source"),
                      sg.Text("CYS price / purchase price")],
                 ])],
             ], vertical_alignment="top"),
-            sg.Frame("Items", [
-                [sg.Text("TODO: list of items in set")],
-                [sg.Checkbox("Item name"), sg.Text(
-                    "price", size=(5, 1)), sg.Input("paid", size=(5, 1))],
-            ], expand_y=True),
+            sg.Column([
+                [sg.Frame("Items", [
+                    [sg.Text("TODO: list of items in set")],
+                    [sg.Checkbox("Item name"), sg.Text(
+                        "price", size=(5, 1)), sg.Input("paid", size=(5, 1))],
+                ], expand_y=True)],
+                [sg.Frame("Contained Sets", [
+                    [sg.Text("TODO: list of smaller sets in set")],
+                    [sg.Checkbox("Item name"), sg.Text(
+                        "price", size=(5, 1)), sg.Input("paid", size=(5, 1))],
+                ], expand_y=True)],
+            ]),
         ],
     ]
     layout_mmao = [
         [sg.Button("Make Me an Offer (Store page)", key=(
-            "LINK", "STORE", "_", "MMAO"), **STYLES["btn_url"])],
+            "-LINK-", "-STORE-", "_", "-MMAO-"), **STYLES["btn_url"])],
         [sg.Text("TODO: Make Me an Offer checking UI")],
     ]
     layout_calcs = [
@@ -328,17 +343,20 @@ def main():
                             font=("_", 24, "bold")), sg.Push()],
         [
             sg.Column([
-                [sg.Button("Items", key=("NAVIGATION", "ITEMS"), expand_x=True)],
-                [sg.Button("Sets", key=("NAVIGATION", "SETS"), expand_x=True)],
+                [sg.Button("Items", key=("-NAVIGATION-",
+                           "-ITEMS-"), expand_x=True)],
+                [sg.Button("Sets", key=("-NAVIGATION-", "SETS"), expand_x=True)],
                 [sg.Button("Complete Your Set", key=(
-                    "NAVIGATION", "CYS"), expand_x=True)],
+                    "-NAVIGATION-", "-CYS-"), expand_x=True)],
                 [sg.Button("Make Me an Offer", key=(
-                    "NAVIGATION", "MMAO"), expand_x=True)],
-                [sg.Button("Sales", key=("NAVIGATION", "SALES"), expand_x=True)],
+                    "-NAVIGATION-", "-MMAO-"), expand_x=True)],
+                [sg.Button("Sales", key=("-NAVIGATION-",
+                           "-SALES-"), expand_x=True)],
                 [sg.Button("Wish List", key=(
-                    "NAVIGATION", "WISHLIST"), expand_x=True)],
+                    "-NAVIGATION-", "-WISHLIST-"), expand_x=True)],
                 [sg.VPush()],
-                [sg.Button("About", key=("NAVIGATION", "ABOUT"), expand_x=True)],
+                [sg.Button("About", key=("-NAVIGATION-",
+                           "-ABOUT-"), expand_x=True)],
             ], expand_y=True),
             sg.Column([
                 [sg.TabGroup([[
@@ -348,7 +366,7 @@ def main():
                     sg.Tab("Daily Deals", layout_dd),
                     sg.Tab("Sales", [
                         [sg.Button("Sales (Store page)", key=(
-                            "LINK", "STORE", "_", "SALE"), **STYLES["btn_url"])],
+                            "-LINK-", "-STORE-", "_", "-SALE-"), **STYLES["btn_url"])],
                         [sg.Column(sales_weekly(store["deals"]["sale"], store["items"]),
                                    scrollable=True, vertical_scroll_only=True)],
                     ]),
@@ -388,18 +406,18 @@ def main():
         win_loc = win_main.current_location()
 
         if isinstance(event, tuple):
-            if event[0] == "NAVIGATION":
+            if event[0] == "-NAVIGATION-":
                 # sidebar buttons
-                if event[1] == "ABOUT" and win_about is None:
+                if event[1] == "-ABOUT-" and win_about is None:
                     win_about = about()
-                if event[1] != "ABOUT":
+                if event[1] != "-ABOUT-":
                     pass
-            if event[0] == "LINK":
+            if event[0] == "-LINK-":
                 handler_link(win, event, values)
-            if event[0] == "STORE":
+            if event[0] == "-STORE-":
                 webbrowser.open(get_store_link(event[1]))
-            if event[0] == "SETTINGS":
-                if event[1] == "TIMEZONE":
+            if event[0] == "-SETTINGS-":
+                if event[1] == "-TIMEZONE-":
                     timezone = values[event]
 
     win_main.close()
